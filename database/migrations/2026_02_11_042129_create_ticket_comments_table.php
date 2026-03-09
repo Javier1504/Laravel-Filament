@@ -10,26 +10,12 @@ return new class extends Migration
     {
         Schema::create('ticket_comments', function (Blueprint $table) {
             $table->id();
-
-            $table->foreignId('ticket_id')
-                ->constrained('tickets')
-                ->cascadeOnDelete();
-
-            $table->foreignId('author_id')
-                ->nullable()
-                ->constrained('users')
-                ->nullOnDelete();
-
-            // public: terlihat requester (kalau nanti ada portal)
-            // internal: catatan internal agent/admin
-            $table->string('type', 10)->default('public'); // public|internal
-
-            $table->text('message');
-
+            $table->foreignId('ticket_id')->constrained('tickets')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->text('body');
+            $table->boolean('is_internal')->default(false);
+            $table->string('comment_type', 30)->default('note');
             $table->timestamps();
-
-            $table->index(['ticket_id', 'type']);
-            $table->index('author_id');
         });
     }
 

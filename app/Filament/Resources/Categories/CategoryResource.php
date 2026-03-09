@@ -39,6 +39,15 @@ class CategoryResource extends Resource
         return CategoriesTable::configure($table);
     }
 
+    public static function canViewAny(): bool
+{
+    $user = \Illuminate\Support\Facades\Auth::user();
+    if (! $user) return false;
+
+    return $user->hasRole('admin') || $user->can('manage categories');
+}
+
+
     public static function getRelations(): array
     {
         return [

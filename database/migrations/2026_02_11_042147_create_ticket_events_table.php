@@ -11,26 +11,15 @@ return new class extends Migration
         Schema::create('ticket_events', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('ticket_id')
-                ->constrained('tickets')
-                ->cascadeOnDelete();
+            $table->foreignId('ticket_id')->constrained('tickets')->cascadeOnDelete();
+            $table->foreignId('actor_id')->nullable()->constrained('users')->nullOnDelete();
 
-            $table->foreignId('actor_id')
-                ->nullable()
-                ->constrained('users')
-                ->nullOnDelete();
-
-            // contoh: created|assigned|status_changed|commented|resolved|closed|reopened
-            $table->string('event', 30);
-
-            // metadata tambahan (mis. old_status/new_status, assignee_id, message_id, dll)
+            $table->string('event_type', 60); // created/assigned/status_changed/comment_added
+            $table->string('from_status', 30)->nullable();
+            $table->string('to_status', 30)->nullable();
             $table->json('meta')->nullable();
 
-            $table->timestamps();
-
-            $table->index(['ticket_id', 'event']);
-            $table->index('actor_id');
-            $table->index('created_at');
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 

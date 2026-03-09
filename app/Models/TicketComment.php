@@ -4,26 +4,30 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Auth;
 
 class TicketComment extends Model
 {
-    protected $fillable = ['ticket_id','author_id','type','message'];
+    protected $fillable = [
+        'ticket_id',
+        'user_id',
+        'body',
+        'is_internal',
+        'comment_type',
+    ];
 
-    public function ticket(): BelongsTo { return $this->belongsTo(Ticket::class); }
-    public function author(): BelongsTo { return $this->belongsTo(User::class, 'author_id'); }
+    protected $casts = [
+        'is_internal' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
-    protected static function booted(): void
+    public function ticket(): BelongsTo
     {
-        static::creating(fn (TicketComment $c) => $c->author_id = $c->author_id ?: Auth::id());
+        return $this->belongsTo(Ticket::class);
+    }
 
-        static::created(function (TicketComment $c) {
-            TicketEvent::create([
-                'ticket_id' => $c->ticket_id,
-                'actor_id' => Auth::id(),
-                'event' => 'commented',
-                'meta' => ['type' => $c->type],
-            ]);
-        });
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Ticket;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,39 +12,27 @@ return new class extends Migration
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
 
-            // Identitas ticket
-            $table->string('code')->unique(); // contoh: TCK-000001
+            $table->string('code', 30)->unique();
             $table->string('title', 150);
             $table->text('description')->nullable();
 
-            // Relasi
-            $table->foreignId('category_id')
-                ->constrained('categories')
-                ->cascadeOnDelete();
+            $table->string('request_type', 40)->default('incident');
+            $table->string('asset_tag', 80)->nullable();
+            $table->string('location', 120)->nullable();
 
-            $table->foreignId('assignee_id')
-                ->nullable()
-                ->constrained('users')
-                ->nullOnDelete();
+            $table->foreignId('category_id')->nullable()->constrained('categories')->nullOnDelete();
 
-            // Metadata request
-            $table->string('requester_name', 120)->nullable();
-            $table->string('requester_email', 120)->nullable();
+            $table->string('priority', 20)->default('medium');
+            $table->string('status', 30)->default(Ticket::STATUS_NEW);
 
-            // Workflow
-            $table->string('priority', 10)->default('medium'); // low|medium|high|urgent
-            $table->string('status', 15)->default('open');     // open|in_progress|resolved|closed
+            $table->foreignId('requester_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('assignee_id')->nullable()->constrained('users')->nullOnDelete();
 
-            // SLA / waktu
             $table->timestamp('due_at')->nullable();
             $table->timestamp('resolved_at')->nullable();
+            $table->timestamp('closed_at')->nullable();
 
             $table->timestamps();
-
-            // Index biar cepat untuk list/filter di Filament
-            $table->index(['status', 'priority']);
-            $table->index(['category_id', 'assignee_id']);
-            $table->index('due_at');
         });
     }
 

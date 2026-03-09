@@ -3,14 +3,23 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Category extends Model
 {
-    protected $fillable = ['name','sla_hours'];
+    protected $fillable = [
+        'name',
+        'slug',
+        'description',
+        'is_active',
+    ];
 
-    public function tickets(): HasMany
+    protected static function booted(): void
     {
-        return $this->hasMany(Ticket::class);
+        static::saving(function (Category $category) {
+            if (! $category->slug && $category->name) {
+                $category->slug = Str::slug($category->name);
+            }
+        });
     }
 }
